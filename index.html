@@ -4,27 +4,128 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Main Page</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #121212;
+            color: #ffffff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 400px;
+            width: 100%;
+            background-color: #1e1e1e;
+            padding: 30px 20px;
+            border-radius: 12px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+        }
+
+        h1 {
+            text-align: center;
+            font-size: 1.8rem;
+            margin-bottom: 20px;
+            color: #ffffff;
+        }
+
+        #welcome-message {
+            text-align: center;
+            margin-bottom: 20px;
+            font-size: 1.1rem;
+            color: #b0b0b0;
+        }
+
+        form {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        select, 
+        input[type="text"] {
+            width: 100%;
+            padding: 12px 15px;
+            background-color: #2e2e2e;
+            color: #ffffff;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            outline: none;
+            transition: background-color 0.3s ease;
+        }
+
+        select:focus, 
+        input[type="text"]:focus {
+            background-color: #373737;
+        }
+
+        input[type="text"]::placeholder {
+            color: #b0b0b0;
+        }
+
+        button {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #6200ea, #3700b3);
+            color: #ffffff;
+            font-size: 1rem;
+            font-weight: bold;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            text-transform: uppercase;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        button:hover {
+            background: linear-gradient(135deg, #3700b3, #6200ea);
+            transform: translateY(-3px);
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+        }
+
+        button:active {
+            transform: translateY(0);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        #logout-button {
+            background: #b00020;
+        }
+
+        #logout-button:hover {
+            background: #ff1744;
+        }
+    </style>
 </head>
 <body>
-    <h1>Welcome to the App</h1>
+    <div class="container">
+        <h1>Welcome to the App</h1>
 
-    <div id="welcome-message"></div>
+        <div id="welcome-message">Loading...</div>
 
-    <form id="entry-form" style="margin-top: 20px;">
-        <select id="scene-select" required>
-            <option value="Main">Main</option>
-            <option value="Placeholder1">Placeholder 1</option>
-            <option value="Placeholder2">Placeholder 2</option>
-            <option value="Placeholder3">Placeholder 3</option>
-        </select>
-        <input type="text" id="link-input" placeholder="Enter inspect link..." required>
-        <button type="submit">Add Entry</button>
-    </form>
+        <form id="entry-form">
+            <select id="scene-select" required>
+                <option value="Main">Main</option>
+                <option value="Placeholder1">Placeholder 1</option>
+                <option value="Placeholder2">Placeholder 2</option>
+                <option value="Placeholder3">Placeholder 3</option>
+            </select>
+            <input type="text" id="link-input" placeholder="Enter inspect link..." required>
+            <button type="submit">Add Entry</button>
+        </form>
 
-    <h2>Saved Entries</h2>
-    <ul id="entries-list"></ul>
-
-    <button id="logout-button" style="margin-top: 20px;">Log Out</button>
+        <button id="logout-button">Log Out</button>
+    </div>
 
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
@@ -44,22 +145,18 @@
         const database = firebase.database();
         const auth = firebase.auth();
 
-        // Track user authentication state
         auth.onAuthStateChanged(user => {
             if (user) {
                 document.getElementById('welcome-message').innerText = `Welcome, ${user.displayName}`;
-                loadEntries();
             } else {
                 window.location.href = 'login.html';
             }
         });
 
-        // Logout
         document.getElementById('logout-button').addEventListener('click', function() {
             auth.signOut().then(() => window.location.href = 'login.html');
         });
 
-        // Save entry to Firebase
         document.getElementById('entry-form').addEventListener('submit', function(event) {
             event.preventDefault();
             const scene = document.getElementById('scene-select').value;
@@ -79,34 +176,12 @@
                     } else {
                         alert('Entry saved successfully!');
                         document.getElementById('entry-form').reset();
-                        loadEntries();
                     }
                 });
             } else {
                 alert('You must be logged in to submit an entry.');
             }
         });
-
-        // Load entries from Firebase
-        function loadEntries() {
-            const dbRef = database.ref('entries');
-            dbRef.on('value', snapshot => {
-                const entries = snapshot.val();
-                const entriesList = document.getElementById('entries-list');
-                entriesList.innerHTML = '';
-
-                if (entries) {
-                    Object.keys(entries).forEach(key => {
-                        const entry = entries[key];
-                        const listItem = document.createElement('li');
-                        listItem.textContent = `Name: ${entry.name}, Scene: ${entry.scene}, Link: ${entry.link}`;
-                        entriesList.appendChild(listItem);
-                    });
-                } else {
-                    entriesList.innerHTML = '<li>No entries found</li>';
-                }
-            });
-        }
     </script>
 </body>
 </html>

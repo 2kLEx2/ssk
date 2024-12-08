@@ -4,50 +4,113 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sign Up</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #121212;
+            color: #ffffff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 400px;
+            width: 100%;
+            background-color: #1e1e1e;
+            padding: 30px 20px;
+            border-radius: 12px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+        }
+
+        h1 {
+            text-align: center;
+            font-size: 1.8rem;
+            margin-bottom: 20px;
+            color: #ffffff;
+        }
+
+        form {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        input {
+            width: 100%;
+            padding: 12px 15px;
+            background-color: #2e2e2e;
+            color: #ffffff;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            outline: none;
+            transition: background-color 0.3s ease;
+        }
+
+        input:focus {
+            background-color: #373737;
+        }
+
+        input::placeholder {
+            color: #b0b0b0;
+        }
+
+        button {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #6200ea, #3700b3);
+            color: #ffffff;
+            font-size: 1rem;
+            font-weight: bold;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            text-transform: uppercase;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        button:hover {
+            background: linear-gradient(135deg, #3700b3, #6200ea);
+            transform: translateY(-3px);
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+        }
+
+        p {
+            text-align: center;
+            margin-top: 10px;
+            color: #b0b0b0;
+        }
+
+        p a {
+            color: #6200ea;
+            text-decoration: none;
+        }
+
+        p a:hover {
+            text-decoration: underline;
+        }
+    </style>
 </head>
 <body>
-    <h1>Sign Up</h1>
-    <form id="signup-form">
-        <input type="text" id="signup-name" placeholder="Enter your name" required>
-        <input type="email" id="signup-email" placeholder="Enter your email" required>
-        <input type="password" id="signup-password" placeholder="Enter your password" required>
-        <button type="submit">Sign Up</button>
-    </form>
+    <div class="container">
+        <h1>Sign Up</h1>
+        <form id="signup-form">
+            <input type="text" id="signup-name" placeholder="Enter your name" required>
+            <input type="email" id="signup-email" placeholder="Enter your email" required>
+            <input type="password" id="signup-password" placeholder="Enter your password" required>
+            <button type="submit">Sign Up</button>
+        </form>
 
-    <p>Already have an account? <a href="login.html">Log in here</a></p>
-
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
-    <script>
-        const firebaseConfig = {
-            apiKey: "AIzaSyB-Ith5rK90hOgkDCFo0X222I-vsSozuvE",
-            authDomain: "sskv1-dea00.firebaseapp.com",
-            projectId: "sskv1-dea00",
-            storageBucket: "sskv1-dea00.appspot.com",
-            messagingSenderId: "116834818705",
-            appId: "1:116834818705:web:2609661b049bfbea11fd30"
-        };
-
-        firebase.initializeApp(firebaseConfig);
-        const auth = firebase.auth();
-
-        document.getElementById('signup-form').addEventListener('submit', function(event) {
-            event.preventDefault();
-            const name = document.getElementById('signup-name').value;
-            const email = document.getElementById('signup-email').value;
-            const password = document.getElementById('signup-password').value;
-
-            auth.createUserWithEmailAndPassword(email, password)
-                .then(userCredential => {
-                    const user = userCredential.user;
-                    return user.updateProfile({ displayName: name });
-                })
-                .then(() => {
-                    alert('Sign up successful!');
-                    window.location.href = 'login.html'; // Redirect to login page
-                })
-                .catch(error => alert(error.message));
-        });
-    </script>
+        <p>Already have an account? <a href="login.html">Log in here</a></p>
+    </div>
 </body>
 </html>
