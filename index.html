@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CS2 Inspect Link Manager</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        .container {
+            max-width: 600px;
+            margin: auto;
+        }
+        input[type="text"], select {
+            width: calc(100% - 110px);
+            padding: 10px;
+            margin: 10px 0;
+        }
+        button {
+            padding: 10px;
+            cursor: pointer;
+        }
+        ul {
+            list-style-type: none;
+            padding: 0;
+        }
+        li {
+            margin: 5px 0;
+            background: #f4f4f4;
+            padding: 10px;
+            border: 1px solid #ddd;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>CS2 Inspect Link Manager</h1>
+        <form id="entry-form">
+            <select id="scene-select" required>
+                <option value="Main">Main</option>
+                <option value="Placeholder1">Placeholder 1</option>
+                <option value="Placeholder2">Placeholder 2</option>
+                <option value="Placeholder3">Placeholder 3</option>
+            </select>
+            <input type="text" id="link-input" placeholder="Enter inspect link..." required>
+            <button type="submit">Add Entry</button>
+        </form>
+
+        <h2>Saved Entries</h2>
+        <ul id="entries-list"></ul>
+    </div>
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.19.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.19.1/firebase-database.js"></script>
+
+    <script>
+    // Firebase Configuration
+    const firebaseConfig = {
+        apiKey: "AIzaSyB-Ith5rK90hOgkDCFo0X222I-vsSozuvE",
+        authDomain: "sskv1-dea00.firebaseapp.com",
+        databaseURL: "https://sskv1-dea00-default-rtdb.europe-west1.firebasedatabase.app",
+        projectId: "sskv1-dea00",
+        storageBucket: "sskv1-dea00.appspot.com",
+        messagingSenderId: "116834818705",
+        appId: "1:116834818705:web:2609661b049bfbea11fd30"
+    };
+
+    // Initialize Firebase
+    const app = firebase.initializeApp(firebaseConfig);
+    const database = firebase.database();
+
+    // --- Save Entry to Firebase ---
+    document.getElementById('entry-form').addEventListener('submit', function(event) {
+        event.preventDefault();
+        const scene = document.getElementById('scene-select').value;
+        const link = document.getElementById('link-input').value;
+
+        const newEntry = { scene, link };
+        console.log('Submitting entry:', newEntry); // Debug log
+
+        const dbRef = firebase.database().ref('entries').push();
+        dbRef.set(newEntry, function(error) {
+            if (error) {
+                console.error('Error saving entry:', error);
+                alert('Error saving entry to Firebase');
+            } else {
+                console.log('Entry saved successfully:', newEntry);
+                alert('Entry saved to Firebase');
+                document.getElementById('entry-form').reset();
+            }
+        });
+    });
+
+    // --- Realtime Listener ---
+    function listenForChanges() {
+        const dbRef = firebase.database().ref('entries');
+        dbRef.on('value', function(snapshot) {
+            console.log('Database change detected!');
+            const entries = snapshot.val();
+            const entriesList = document.getElementById('entries-list');
+            entriesList.innerHTML = ''; // Clear existing entries
+
+            if (entries) {
+                console.log('Entries found:', entries);
+                Object.keys(entries).forEach(key => {
+                    const entry = entries[key];
+                    const listItem = document.createElement('li');
+                    listItem.textContent = `Scene: ${entry.scene}, Link: ${entry.link}`;
+                    entriesList.appendChild(listItem);
+                });
+
+                // Download updated entries as a JSON file
+                const json = JSON.stringify(entries, null, 2);
+                downloadJSON(json, 'entries.json');
+            } else {
+                console.log('No entries found.');
+            }
+        });
+    }
+
+    // --- Download JSON File ---
+    function downloadJSON(content, filename) {
+        const blob = new Blob([content], { type: 'application/json' });
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = filename;
+        link.click();
+        console.log('File downloaded:', filename);
+    }
+
+    // --- Initialize Realtime Listener ---
+    window.addEventListener('load', function() {
+        console.log('Initializing listener...');
+        listenForChanges();
+    });
+    </script>
+</body>
+</html>
