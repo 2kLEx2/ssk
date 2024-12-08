@@ -10,14 +10,30 @@
 
     <div id="welcome-message"></div>
 
-    <button id="logout-button">Log Out</button>
+    <form id="entry-form" style="margin-top: 20px;">
+        <select id="scene-select" required>
+            <option value="Main">Main</option>
+            <option value="Placeholder1">Placeholder 1</option>
+            <option value="Placeholder2">Placeholder 2</option>
+            <option value="Placeholder3">Placeholder 3</option>
+        </select>
+        <input type="text" id="link-input" placeholder="Enter inspect link..." required>
+        <button type="submit">Add Entry</button>
+    </form>
+
+    <h2>Saved Entries</h2>
+    <ul id="entries-list"></ul>
+
+    <button id="logout-button" style="margin-top: 20px;">Log Out</button>
 
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
     <script>
         const firebaseConfig = {
             apiKey: "AIzaSyB-Ith5rK90hOgkDCFo0X222I-vsSozuvE",
             authDomain: "sskv1-dea00.firebaseapp.com",
+            databaseURL: "https://sskv1-dea00-default-rtdb.europe-west1.firebasedatabase.app",
             projectId: "sskv1-dea00",
             storageBucket: "sskv1-dea00.appspot.com",
             messagingSenderId: "116834818705",
@@ -25,19 +41,72 @@
         };
 
         firebase.initializeApp(firebaseConfig);
+        const database = firebase.database();
         const auth = firebase.auth();
 
+        // Track user authentication state
         auth.onAuthStateChanged(user => {
             if (user) {
                 document.getElementById('welcome-message').innerText = `Welcome, ${user.displayName}`;
+                loadEntries();
             } else {
                 window.location.href = 'login.html';
             }
         });
 
+        // Logout
         document.getElementById('logout-button').addEventListener('click', function() {
             auth.signOut().then(() => window.location.href = 'login.html');
         });
+
+        // Save entry to Firebase
+        document.getElementById('entry-form').addEventListener('submit', function(event) {
+            event.preventDefault();
+            const scene = document.getElementById('scene-select').value;
+            const link = document.getElementById('link-input').value;
+            const currentUser = auth.currentUser;
+
+            if (currentUser) {
+                const newEntry = { 
+                    scene: scene, 
+                    link: link, 
+                    name: currentUser.displayName 
+                };
+                const dbRef = database.ref('entries/' + Date.now());
+                dbRef.set(newEntry, error => {
+                    if (error) {
+                        alert('Error saving entry!');
+                    } else {
+                        alert('Entry saved successfully!');
+                        document.getElementById('entry-form').reset();
+                        loadEntries();
+                    }
+                });
+            } else {
+                alert('You must be logged in to submit an entry.');
+            }
+        });
+
+        // Load entries from Firebase
+        function loadEntries() {
+            const dbRef = database.ref('entries');
+            dbRef.on('value', snapshot => {
+                const entries = snapshot.val();
+                const entriesList = document.getElementById('entries-list');
+                entriesList.innerHTML = '';
+
+                if (entries) {
+                    Object.keys(entries).forEach(key => {
+                        const entry = entries[key];
+                        const listItem = document.createElement('li');
+                        listItem.textContent = `Name: ${entry.name}, Scene: ${entry.scene}, Link: ${entry.link}`;
+                        entriesList.appendChild(listItem);
+                    });
+                } else {
+                    entriesList.innerHTML = '<li>No entries found</li>';
+                }
+            });
+        }
     </script>
 </body>
 </html>
