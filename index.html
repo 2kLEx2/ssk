@@ -165,9 +165,196 @@
 
             if (currentUser) {
                 const newEntry = { 
-                    scene: scene, 
-                    inspect_link: link, 
-                    name: currentUser.displayName 
+                    link: link, // The key is now "link" instead of "inspect_link"
+                    name: currentUser.displayName, 
+                    scene: scene 
+                };
+                const dbRef = database.ref('entries/' + Date.now());
+                dbRef.set(newEntry, error => {
+                    if (error) {
+                        alert('Error saving entry!');
+                    } else {
+                        alert('Entry saved successfully!');
+                        document.getElementById('entry-form').reset();
+                    }
+                });
+            } else {
+                alert('You must be logged in to submit an entry.');
+            }
+        });
+    </script>
+</body>
+</html>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Main Page</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #121212;
+            color: #ffffff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 400px;
+            width: 100%;
+            background-color: #1e1e1e;
+            padding: 30px 20px;
+            border-radius: 12px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+        }
+
+        h1 {
+            text-align: center;
+            font-size: 1.8rem;
+            margin-bottom: 20px;
+            color: #ffffff;
+        }
+
+        #welcome-message {
+            text-align: center;
+            margin-bottom: 20px;
+            font-size: 1.1rem;
+            color: #b0b0b0;
+        }
+
+        form {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        select, 
+        input[type="text"] {
+            width: 100%;
+            padding: 12px 15px;
+            background-color: #2e2e2e;
+            color: #ffffff;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            outline: none;
+            transition: background-color 0.3s ease;
+        }
+
+        select:focus, 
+        input[type="text"]:focus {
+            background-color: #373737;
+        }
+
+        input[type="text"]::placeholder {
+            color: #b0b0b0;
+        }
+
+        button {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #6200ea, #3700b3);
+            color: #ffffff;
+            font-size: 1rem;
+            font-weight: bold;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            text-transform: uppercase;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        button:hover {
+            background: linear-gradient(135deg, #3700b3, #6200ea);
+            transform: translateY(-3px);
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+        }
+
+        button:active {
+            transform: translateY(0);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        #logout-button {
+            background: #b00020;
+        }
+
+        #logout-button:hover {
+            background: #ff1744;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Welcome to the App</h1>
+
+        <div id="welcome-message">Loading...</div>
+
+        <form id="entry-form">
+            <select id="scene-select" required>
+                <option value="Main">Main</option>
+                <option value="Placeholder1">Placeholder 1</option>
+                <option value="Placeholder2">Placeholder 2</option>
+                <option value="Placeholder3">Placeholder 3</option>
+            </select>
+            <input type="text" id="link-input" placeholder="Enter inspect link..." required>
+            <button type="submit">Add Entry</button>
+        </form>
+
+        <button id="logout-button">Log Out</button>
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyB-Ith5rK90hOgkDCFo0X222I-vsSozuvE",
+            authDomain: "sskv1-dea00.firebaseapp.com",
+            databaseURL: "https://sskv1-dea00-default-rtdb.europe-west1.firebasedatabase.app",
+            projectId: "sskv1-dea00",
+            storageBucket: "sskv1-dea00.appspot.com",
+            messagingSenderId: "116834818705",
+            appId: "1:116834818705:web:2609661b049bfbea11fd30"
+        };
+
+        firebase.initializeApp(firebaseConfig);
+        const database = firebase.database();
+        const auth = firebase.auth();
+
+        auth.onAuthStateChanged(user => {
+            if (user) {
+                document.getElementById('welcome-message').innerText = `Welcome, ${user.displayName}`;
+            } else {
+                window.location.href = 'login.html';
+            }
+        });
+
+        document.getElementById('logout-button').addEventListener('click', function() {
+            auth.signOut().then(() => window.location.href = 'login.html');
+        });
+
+        document.getElementById('entry-form').addEventListener('submit', function(event) {
+            event.preventDefault();
+            const scene = document.getElementById('scene-select').value;
+            const link = document.getElementById('link-input').value;
+            const currentUser = auth.currentUser;
+
+            if (currentUser) {
+                const newEntry = { 
+                    link: link, // The key is now "link" instead of "inspect_link"
+                    name: currentUser.displayName, 
+                    scene: scene 
                 };
                 const dbRef = database.ref('entries/' + Date.now());
                 dbRef.set(newEntry, error => {
