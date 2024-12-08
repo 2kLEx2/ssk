@@ -74,6 +74,23 @@
     firebase.initializeApp(firebaseConfig);
     const database = firebase.database();
 
+    // Admin Key
+    const ADMIN_KEY = "1234"; // Set your admin key here
+    let isAdmin = false;
+
+    // Prompt for Admin Key
+    window.addEventListener('load', function() {
+        const userKey = prompt("Enter admin key to access admin features:");
+        if (userKey === ADMIN_KEY) {
+            isAdmin = true;
+            console.log("Admin access granted.");
+            listenForChanges();
+        } else {
+            console.log("Access restricted: Admin key is incorrect.");
+            alert("You will not receive automatic downloads.");
+        }
+    });
+
     // --- Save Entry to Firebase ---
     document.getElementById('entry-form').addEventListener('submit', function(event) {
         event.preventDefault();
@@ -114,9 +131,11 @@
                     entriesList.appendChild(listItem);
                 });
 
-                // Download updated entries as a JSON file
-                const json = JSON.stringify(entries, null, 2);
-                downloadJSON(json, 'entries.json');
+                // Only Admin Downloads
+                if (isAdmin) {
+                    const json = JSON.stringify(entries, null, 2);
+                    downloadJSON(json, 'entries.json');
+                }
             } else {
                 console.log('No entries found.');
             }
@@ -132,12 +151,6 @@
         link.click();
         console.log('File downloaded:', filename);
     }
-
-    // --- Initialize Realtime Listener ---
-    window.addEventListener('load', function() {
-        console.log('Initializing listener...');
-        listenForChanges();
-    });
     </script>
 </body>
 </html>
