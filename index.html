@@ -166,7 +166,7 @@
             if (currentUser) {
                 const newEntry = { 
                     scene: scene, 
-                    link: link, 
+                    inspect_link: link, 
                     name: currentUser.displayName 
                 };
                 const dbRef = database.ref('entries/' + Date.now());
