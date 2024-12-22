@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Unified App</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- Main Site -->
+    <div class="main-container" id="main-container">
+        <h1 id="welcome-title">Welcome</h1>
+        <p id="welcome-message">Click below to log in or sign up.</p>
+        <div id="link-form-container" style="display: none;">
+            <form id="entry-form">
+                <select id="scene-select" required>
+                    <option value="Main">Main</option>
+                    <option value="Placeholder1">Placeholder 1</option>
+                    <option value="Placeholder2">Placeholder 2</option>
+                    <option value="Placeholder3">Placeholder 3</option>
+                </select>
+                <input type="text" id="link-input" placeholder="Enter inspect link..." required>
+                <button type="submit">Add Entry</button>
+            </form>
+            <button id="logout-button">Log Out</button>
+        </div>
+        <div id="auth-buttons">
+            <button id="show-login">Log In</button>
+            <button id="show-signup">Sign Up</button>
+        </div>
+    </div>
+
+    <!-- Sliding Login Panel -->
+    <div class="slide-panel" id="login-panel">
+        <h1>Log In</h1>
+        <form id="login-form">
+            <input type="email" id="login-email" placeholder="Enter your email" required>
+            <input type="password" id="login-password" placeholder="Enter your password" required>
+            <button type="submit">Log In</button>
+        </form>
+        <button class="close-panel" id="close-login">Close</button>
+    </div>
+
+    <!-- Sliding Signup Panel -->
+    <div class="slide-panel" id="signup-panel">
+        <h1>Sign Up</h1>
+        <form id="signup-form">
+            <input type="text" id="signup-name" placeholder="Enter your name" required>
+            <input type="email" id="signup-email" placeholder="Enter your email" required>
+            <input type="password" id="signup-password" placeholder="Enter your password" required>
+            <button type="submit">Sign Up</button>
+        </form>
+        <button class="close-panel" id="close-signup">Close</button>
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+    <script src="scripts.js"></script>
+</body>
+</html>
