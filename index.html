@@ -88,7 +88,7 @@
             gap: 20px;
         }
 
-        input {
+        input, select {
             width: 100%;
             padding: 12px;
             background: #2C2E38;
@@ -98,7 +98,7 @@
             font-size: 14px;
         }
 
-        input:focus {
+        input:focus, select:focus {
             border-color: #8823AA;
             box-shadow: 0px 0px 6px rgba(136, 35, 170, 0.8);
         }
@@ -121,11 +121,26 @@
 </head>
 <body>
     <!-- Main Site -->
-    <div class="main-container">
-        <h1>Welcome</h1>
-        <p>Click below to log in or sign up.</p>
-        <button id="show-login">Log In</button>
-        <button id="show-signup">Sign Up</button>
+    <div class="main-container" id="main-container">
+        <h1 id="welcome-title">Welcome</h1>
+        <p id="welcome-message">Click below to log in or sign up.</p>
+        <div id="link-form-container" style="display: none;">
+            <form id="entry-form">
+                <select id="scene-select" required>
+                    <option value="Main">Main</option>
+                    <option value="Placeholder1">Placeholder 1</option>
+                    <option value="Placeholder2">Placeholder 2</option>
+                    <option value="Placeholder3">Placeholder 3</option>
+                </select>
+                <input type="text" id="link-input" placeholder="Enter inspect link..." required>
+                <button type="submit">Add Entry</button>
+            </form>
+            <button id="logout-button">Log Out</button>
+        </div>
+        <div id="auth-buttons">
+            <button id="show-login">Log In</button>
+            <button id="show-signup">Sign Up</button>
+        </div>
     </div>
 
     <!-- Sliding Login Panel -->
@@ -169,36 +184,51 @@
         // Sliding panels
         const loginPanel = document.getElementById('login-panel');
         const signupPanel = document.getElementById('signup-panel');
+        const linkFormContainer = document.getElementById('link-form-container');
+        const authButtons = document.getElementById('auth-buttons');
+        const welcomeMessage = document.getElementById('welcome-message');
+
         document.getElementById('show-login').onclick = () => loginPanel.classList.add('active');
         document.getElementById('show-signup').onclick = () => signupPanel.classList.add('active');
         document.getElementById('close-login').onclick = () => loginPanel.classList.remove('active');
         document.getElementById('close-signup').onclick = () => signupPanel.classList.remove('active');
 
-        // Login functionality
-        document.getElementById('login-form').onsubmit = (event) => {
+        // Auth State Change
+        auth.onAuthStateChanged(user => {
+            if (user) {
+                welcomeMessage.textContent = `Welcome, ${user.displayName}`;
+                authButtons.style.display = 'none';
+                linkFormContainer.style.display = 'block';
+            } else {
+                authButtons.style.display = 'block';
+                linkFormContainer.style.display = 'none';
+            }
+        });
+
+        // Login
+        document.getElementById('login-form').onsubmit = event => {
             event.preventDefault();
             const email = document.getElementById('login-email').value;
             const password = document.getElementById('login-password').value;
 
             auth.signInWithEmailAndPassword(email, password)
-                .then(() => alert('Login successful!'))
                 .catch(error => alert(error.message));
         };
 
-        // Signup functionality
-        document.getElementById('signup-form').onsubmit = (event) => {
+        // Signup
+        document.getElementById('signup-form').onsubmit = event => {
             event.preventDefault();
             const name = document.getElementById('signup-name').value;
             const email = document.getElementById('signup-email').value;
             const password = document.getElementById('signup-password').value;
 
             auth.createUserWithEmailAndPassword(email, password)
-                .then(userCredential => {
-                    return userCredential.user.updateProfile({ displayName: name });
-                })
-                .then(() => alert('Signup successful!'))
+                .then(userCredential => userCredential.user.updateProfile({ displayName: name }))
                 .catch(error => alert(error.message));
         };
+
+        // Logout
+        document.getElementById('logout-button').onclick = () => auth.signOut();
     </script>
 </body>
 </html>
