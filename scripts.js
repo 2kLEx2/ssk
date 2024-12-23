@@ -16,7 +16,7 @@ const auth = firebase.auth();
 const database = firebase.database();
 const storage = firebase.storage();
 
-// Sliding panels
+// UI Element Selectors
 const loginPanel = document.getElementById('login-panel');
 const signupPanel = document.getElementById('signup-panel');
 const linkFormContainer = document.getElementById('link-form-container');
@@ -25,40 +25,37 @@ const welcomeMessage = document.getElementById('welcome-message');
 const galleryPanel = document.getElementById('gallery-panel');
 const galleryContainer = document.getElementById('gallery-container');
 
-document.getElementById('show-login').onclick = () => loginPanel.classList.add('active');
-document.getElementById('show-signup').onclick = () => signupPanel.classList.add('active');
-document.getElementById('close-login').onclick = () => loginPanel.classList.remove('active');
-document.getElementById('close-signup').onclick = () => signupPanel.classList.remove('active');
-document.getElementById('show-gallery').onclick = () => {
+// Event Listeners for UI Panels
+document.getElementById('show-login').addEventListener('click', () => loginPanel.classList.add('active'));
+document.getElementById('show-signup').addEventListener('click', () => signupPanel.classList.add('active'));
+document.getElementById('close-login').addEventListener('click', () => loginPanel.classList.remove('active'));
+document.getElementById('close-signup').addEventListener('click', () => signupPanel.classList.remove('active'));
+document.getElementById('close-gallery').addEventListener('click', () => galleryPanel.classList.remove('active'));
+document.getElementById('show-gallery')?.addEventListener('click', () => {
     galleryPanel.classList.add('active');
     loadGallery();
-};
-document.getElementById('close-gallery').onclick = () => galleryPanel.classList.remove('active');
+});
 
-// Handle authentication state changes
+// Authentication State Change Handler
 auth.onAuthStateChanged(user => {
-    console.log("Auth state changed:", user);
     if (user) {
-        console.log("User logged in:", user.displayName);
-        welcomeMessage.innerHTML = `Logged in as <span>${user.displayName}</span>`;
+        console.log(`Logged in as: ${user.displayName}`);
         authButtons.style.display = 'none';
         linkFormContainer.style.display = 'block';
-        loginPanel.classList.remove('active');
-        signupPanel.classList.remove('active');
+        welcomeMessage.innerHTML = `Logged in as <span>${user.displayName}</span>`;
     } else {
         console.log("No user logged in");
         authButtons.style.display = 'block';
         linkFormContainer.style.display = 'none';
+        welcomeMessage.innerHTML = "Click below to log in or sign up.";
     }
 });
 
-// Login handler
-document.getElementById('login-form').onsubmit = event => {
+// Login Form Submission
+document.getElementById('login-form').addEventListener('submit', event => {
     event.preventDefault();
     const email = document.getElementById('login-email').value;
     const password = document.getElementById('login-password').value;
-
-    console.log("Attempting login with:", email, password);
 
     auth.signInWithEmailAndPassword(email, password)
         .then(() => console.log("Login successful"))
@@ -66,57 +63,89 @@ document.getElementById('login-form').onsubmit = event => {
             console.error("Login failed:", error.message);
             alert(error.message);
         });
-};
+});
 
-// Signup handler
-document.getElementById('signup-form').onsubmit = event => {
+// Signup Form Submission
+document.getElementById('signup-form').addEventListener('submit', event => {
     event.preventDefault();
     const name = document.getElementById('signup-name').value;
     const email = document.getElementById('signup-email').value;
     const password = document.getElementById('signup-password').value;
 
-    console.log("Attempting signup with:", email, name);
-
     auth.createUserWithEmailAndPassword(email, password)
         .then(userCredential => {
-            console.log("Signup successful");
             return userCredential.user.updateProfile({ displayName: name });
         })
+        .then(() => console.log("Signup successful"))
         .catch(error => {
             console.error("Signup failed:", error.message);
             alert(error.message);
         });
-};
+});
 
-// Submit link form
-document.getElementById('entry-form').onsubmit = event => {
+// Link Form Submission
+document.getElementById('entry-form').addEventListener('submit', event => {
     event.preventDefault();
-    const sceneSelect = document.getElementById('scene-select');
-    const selectedScene = sceneSelect.value;
+    const sceneSelect = document.getElementById('scene-select').value;
     const link = document.getElementById('link-input').value;
     const currentUser = auth.currentUser;
 
     if (currentUser) {
-        const newEntry = {
-            link: link,
+        const entry = {
+            link,
             name: currentUser.displayName,
-            scene: selectedScene
+            scene: sceneSelect
         };
-        const dbRef = database.ref('entries/' + Date.now());
-        dbRef.set(newEntry, error => {
-            if (error) {
-                showNotification('Error saving entry!', 'error');
-            } else {
+        database.ref(`entries/${Date.now()}`).set(entry)
+            .then(() => {
                 showNotification('Entry saved successfully!', 'success');
-                document.getElementById('link-input').value = ''; // Clear only the input field
-            }
-        });
+                document.getElementById('link-input').value = '';
+            })
+            .catch(() => showNotification('Error saving entry!', 'error'));
     } else {
         showNotification('You must be logged in to submit an entry.', 'error');
     }
-};
+});
 
-// Show notifications
+// Logout Handler
+document.getElementById('logout-button').addEventListener('click', () => {
+    auth.signOut()
+        .then(() => console.log("User logged out"))
+        .catch(error => console.error("Logout failed:", error));
+});
+
+function loadGallery() {
+    const currentUser = auth.currentUser;
+    if (!currentUser) {
+        showNotification('You must be logged in to view the gallery.', 'error');
+        return;
+    }
+
+    galleryContainer.innerHTML = '<p>Loading images...</p>';
+    storage.ref('uploads').listAll()
+        .then(result => {
+            galleryContainer.innerHTML = ''; // Clear loading message
+            result.items.forEach(item => {
+                if (item.name.includes(`_${currentUser.displayName}`)) {
+                    item.getDownloadURL()
+                        .then(url => {
+                            const img = document.createElement('img');
+                            img.src = url;
+                            img.alt = item.name;
+                            galleryContainer.appendChild(img);
+                        })
+                        .catch(err => {
+                            console.error('Error loading image URL:', err);
+                        });
+                }
+            });
+        })
+        .catch(err => {
+            galleryContainer.innerHTML = '<p>Error loading gallery.</p>';
+            console.error('Error fetching gallery:', err);
+        });
+}
+// Notification Display Function
 function showNotification(message, type) {
     const notification = document.createElement('div');
     notification.className = `notification ${type}`;
@@ -126,47 +155,4 @@ function showNotification(message, type) {
     setTimeout(() => {
         notification.remove();
     }, 3000);
-}
-
-// Logout handler
-document.getElementById('logout-button').onclick = () => {
-    console.log("Logging out...");
-    auth.signOut()
-        .then(() => console.log("User logged out"))
-        .catch(error => console.error("Logout failed:", error));
-};
-
-// Load gallery images
-function loadGallery() {
-    const currentUser = auth.currentUser;
-    if (!currentUser) {
-        showNotification('You must be logged in to view the gallery.', 'error');
-        return;
-    }
-
-    const username = currentUser.displayName;
-    galleryContainer.innerHTML = '<p>Loading images...</p>';
-
-    storage.ref('uploads').listAll()
-        .then(result => {
-            galleryContainer.innerHTML = ''; // Clear loading message
-            result.items.forEach(itemRef => {
-                if (itemRef.name.includes(`_${username}`)) {
-                    itemRef.getDownloadURL()
-                        .then(url => {
-                            const img = document.createElement('img');
-                            img.src = url;
-                            img.alt = itemRef.name;
-                            img.style.maxWidth = '100%';
-                            img.style.marginBottom = '10px';
-                            galleryContainer.appendChild(img);
-                        })
-                        .catch(err => console.error('Error loading image URL:', err));
-                }
-            });
-        })
-        .catch(err => {
-            galleryContainer.innerHTML = '<p>Error loading gallery.</p>';
-            console.error('Error fetching gallery:', err);
-        });
 }

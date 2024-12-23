@@ -7,57 +7,80 @@
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <!-- Main Site -->
+    <!-- Main Container -->
     <div class="main-container" id="main-container">
         <h1 id="welcome-title">Welcome</h1>
         <p id="welcome-message">Click below to log in or sign up.</p>
+
+        <!-- Form Container -->
         <div id="link-form-container" style="display: none;">
             <form id="entry-form">
+                <label for="scene-select">Choose Scene:</label>
                 <select id="scene-select" required>
                     <option value="Main">Main</option>
                     <option value="Placeholder1">Placeholder 1</option>
                     <option value="Placeholder2">Placeholder 2</option>
                     <option value="Placeholder3">Placeholder 3</option>
                 </select>
+
+                <label for="link-input">Inspect Link:</label>
                 <input type="text" id="link-input" placeholder="Enter inspect link..." required>
+
                 <button type="submit">Add Entry</button>
+
+                <button id="show-gallery">Open Gallery</button>
             </form>
             <button id="logout-button">Log Out</button>
         </div>
+
+        <!-- Authentication Buttons -->
         <div id="auth-buttons">
             <button id="show-login">Log In</button>
             <button id="show-signup">Sign Up</button>
         </div>
     </div>
-    <!-- Sliding Gallery Panel -->
+
+    <!-- Gallery Panel -->
     <div class="slide-panel" id="gallery-panel">
         <h1>Gallery</h1>
         <div id="gallery-container"></div>
         <button class="close-panel" id="close-gallery">Close</button>
     </div>
-    <!-- Sliding Login Panel -->
+
+    <!-- Login Panel -->
     <div class="slide-panel" id="login-panel">
         <h1>Log In</h1>
         <form id="login-form">
+            <label for="login-email">Email:</label>
             <input type="email" id="login-email" placeholder="Enter your email" required>
+
+            <label for="login-password">Password:</label>
             <input type="password" id="login-password" placeholder="Enter your password" required>
+
             <button type="submit">Log In</button>
         </form>
         <button class="close-panel" id="close-login">Close</button>
     </div>
 
-    <!-- Sliding Signup Panel -->
+    <!-- Signup Panel -->
     <div class="slide-panel" id="signup-panel">
         <h1>Sign Up</h1>
         <form id="signup-form">
+            <label for="signup-name">Name:</label>
             <input type="text" id="signup-name" placeholder="Enter your name" required>
+
+            <label for="signup-email">Email:</label>
             <input type="email" id="signup-email" placeholder="Enter your email" required>
+
+            <label for="signup-password">Password:</label>
             <input type="password" id="signup-password" placeholder="Enter your password" required>
+
             <button type="submit">Sign Up</button>
         </form>
         <button class="close-panel" id="close-signup">Close</button>
     </div>
 
+    <!-- Firebase SDK and Scripts -->
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-analytics.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
