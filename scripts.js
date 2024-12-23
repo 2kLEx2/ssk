@@ -1,16 +1,19 @@
+// Initialize Firebase
 const firebaseConfig = {
-    apiKey: "AIzaSyB-Ith5rK90hOgkDCFo0X222I-vsSozuvE",
-    authDomain: "sskv1-dea00.firebaseapp.com",
-    databaseURL: "https://sskv1-dea00-default-rtdb.europe-west1.firebasedatabase.app",
-    projectId: "sskv1-dea00",
-    storageBucket: "sskv1-dea00.appspot.com",
-    messagingSenderId: "116834818705",
-    appId: "1:116834818705:web:2609661b049bfbea11fd30"
+    apiKey: "AIzaSyCh3xiwgrpHZjsacSe6GqVuttr7iaP47VM",
+    authDomain: "sskv3-5c200.firebaseapp.com",
+    databaseURL: "https://sskv3-5c200-default-rtdb.firebaseio.com",
+    projectId: "sskv3-5c200",
+    storageBucket: "sskv3-5c200.firebasestorage.app",
+    messagingSenderId: "172669224576",
+    appId: "1:172669224576:web:6723dc50bc2a9559194865",
+    measurementId: "G-J5V2WQVZZD"
 };
 
 firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
 const database = firebase.database();
+const storage = firebase.storage();
 
 // Sliding panels
 const loginPanel = document.getElementById('login-panel');
