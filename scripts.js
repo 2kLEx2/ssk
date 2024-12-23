@@ -122,11 +122,11 @@ function loadGallery() {
         return;
     }
 
-    const username = currentUser.displayName;
-    const userFolderPath = `uploads/${username}/`;
+    // Use the name property to determine the folder for gallery
+    const folderName = currentUser.displayName; // Ensure displayName matches the folder naming convention
 
     galleryContainer.innerHTML = '<p>Loading images...</p>';
-    storage.ref(userFolderPath).listAll()
+    storage.ref(`uploads/${folderName}/`).listAll()
         .then(result => {
             galleryContainer.innerHTML = ''; // Clear loading message
             if (result.items.length === 0) {
@@ -140,8 +140,6 @@ function loadGallery() {
                         const img = document.createElement('img');
                         img.src = url;
                         img.alt = item.name;
-                        img.style.maxWidth = '150px';
-                        img.style.margin = '5px';
                         galleryContainer.appendChild(img);
                     })
                     .catch(err => console.error('Error fetching image URL:', err));
@@ -152,6 +150,8 @@ function loadGallery() {
             console.error('Error listing files:', err);
         });
 }
+
+
 // Notification Display Function
 function showNotification(message, type) {
     const notification = document.createElement('div');
