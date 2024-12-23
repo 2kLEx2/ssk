@@ -35,44 +35,60 @@ document.getElementById('show-gallery').onclick = () => {
 };
 document.getElementById('close-gallery').onclick = () => galleryPanel.classList.remove('active');
 
-// Close the panel after login
+// Handle authentication state changes
 auth.onAuthStateChanged(user => {
+    console.log("Auth state changed:", user);
     if (user) {
+        console.log("User logged in:", user.displayName);
         welcomeMessage.innerHTML = `Logged in as <span>${user.displayName}</span>`;
         authButtons.style.display = 'none';
         linkFormContainer.style.display = 'block';
-        // Close the slide-out panels
         loginPanel.classList.remove('active');
         signupPanel.classList.remove('active');
     } else {
+        console.log("No user logged in");
         authButtons.style.display = 'block';
         linkFormContainer.style.display = 'none';
     }
 });
 
-// Login
+// Login handler
 document.getElementById('login-form').onsubmit = event => {
     event.preventDefault();
     const email = document.getElementById('login-email').value;
     const password = document.getElementById('login-password').value;
 
+    console.log("Attempting login with:", email, password);
+
     auth.signInWithEmailAndPassword(email, password)
-        .catch(error => alert(error.message));
+        .then(() => console.log("Login successful"))
+        .catch(error => {
+            console.error("Login failed:", error.message);
+            alert(error.message);
+        });
 };
 
-// Signup
+// Signup handler
 document.getElementById('signup-form').onsubmit = event => {
     event.preventDefault();
     const name = document.getElementById('signup-name').value;
     const email = document.getElementById('signup-email').value;
     const password = document.getElementById('signup-password').value;
 
+    console.log("Attempting signup with:", email, name);
+
     auth.createUserWithEmailAndPassword(email, password)
-        .then(userCredential => userCredential.user.updateProfile({ displayName: name }))
-        .catch(error => alert(error.message));
+        .then(userCredential => {
+            console.log("Signup successful");
+            return userCredential.user.updateProfile({ displayName: name });
+        })
+        .catch(error => {
+            console.error("Signup failed:", error.message);
+            alert(error.message);
+        });
 };
 
-// Submit Link Form
+// Submit link form
 document.getElementById('entry-form').onsubmit = event => {
     event.preventDefault();
     const sceneSelect = document.getElementById('scene-select');
@@ -92,7 +108,6 @@ document.getElementById('entry-form').onsubmit = event => {
                 showNotification('Error saving entry!', 'error');
             } else {
                 showNotification('Entry saved successfully!', 'success');
-                // Reset the form except for the dropdown
                 document.getElementById('link-input').value = ''; // Clear only the input field
             }
         });
@@ -101,7 +116,7 @@ document.getElementById('entry-form').onsubmit = event => {
     }
 };
 
-// Function to show notifications
+// Show notifications
 function showNotification(message, type) {
     const notification = document.createElement('div');
     notification.className = `notification ${type}`;
@@ -113,10 +128,15 @@ function showNotification(message, type) {
     }, 3000);
 }
 
-// Logout
-document.getElementById('logout-button').onclick = () => auth.signOut();
+// Logout handler
+document.getElementById('logout-button').onclick = () => {
+    console.log("Logging out...");
+    auth.signOut()
+        .then(() => console.log("User logged out"))
+        .catch(error => console.error("Logout failed:", error));
+};
 
-// Load Gallery Images
+// Load gallery images
 function loadGallery() {
     const currentUser = auth.currentUser;
     if (!currentUser) {
