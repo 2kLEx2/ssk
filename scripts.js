@@ -4,7 +4,7 @@ const firebaseConfig = {
     authDomain: "sskv3-5c200.firebaseapp.com",
     databaseURL: "https://sskv3-5c200-default-rtdb.firebaseio.com",
     projectId: "sskv3-5c200",
-    storageBucket: "sskv3-5c200.appspot.com",
+    storageBucket: "sskv3-5c200",
     messagingSenderId: "172669224576",
     appId: "1:172669224576:web:6723dc50bc2a9559194865",
     measurementId: "G-J5V2WQVZZD"
