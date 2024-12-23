@@ -116,33 +116,40 @@ document.getElementById('logout-button').addEventListener('click', () => {
 
 function loadGallery() {
     const currentUser = auth.currentUser;
+
     if (!currentUser) {
         showNotification('You must be logged in to view the gallery.', 'error');
         return;
     }
 
+    const username = currentUser.displayName;
+    const userFolderPath = `uploads/${username}/`;
+
     galleryContainer.innerHTML = '<p>Loading images...</p>';
-    storage.ref('uploads').listAll()
+    storage.ref(userFolderPath).listAll()
         .then(result => {
             galleryContainer.innerHTML = ''; // Clear loading message
+            if (result.items.length === 0) {
+                galleryContainer.innerHTML = '<p>No images found in your gallery.</p>';
+                return;
+            }
+
             result.items.forEach(item => {
-                if (item.name.includes(`_${currentUser.displayName}`)) {
-                    item.getDownloadURL()
-                        .then(url => {
-                            const img = document.createElement('img');
-                            img.src = url;
-                            img.alt = item.name;
-                            galleryContainer.appendChild(img);
-                        })
-                        .catch(err => {
-                            console.error('Error loading image URL:', err);
-                        });
-                }
+                item.getDownloadURL()
+                    .then(url => {
+                        const img = document.createElement('img');
+                        img.src = url;
+                        img.alt = item.name;
+                        img.style.maxWidth = '150px';
+                        img.style.margin = '5px';
+                        galleryContainer.appendChild(img);
+                    })
+                    .catch(err => console.error('Error fetching image URL:', err));
             });
         })
         .catch(err => {
             galleryContainer.innerHTML = '<p>Error loading gallery.</p>';
-            console.error('Error fetching gallery:', err);
+            console.error('Error listing files:', err);
         });
 }
 // Notification Display Function
