@@ -16,150 +16,212 @@ const auth = firebase.auth();
 const database = firebase.database();
 const storage = firebase.storage();
 
-// UI Element Selectors
-const loginPanel = document.getElementById('login-panel');
-const signupPanel = document.getElementById('signup-panel');
-const linkFormContainer = document.getElementById('link-form-container');
-const authButtons = document.getElementById('auth-buttons');
-const welcomeMessage = document.getElementById('welcome-message');
-const galleryPanel = document.getElementById('gallery-panel');
-const galleryContainer = document.getElementById('gallery-container');
+document.addEventListener('DOMContentLoaded', () => {
+    // UI Element Selectors
+    const loginPanel = document.getElementById('login-panel');
+    const signupPanel = document.getElementById('signup-panel');
+    const utilityPanel = document.getElementById('utility-panel');
+    const linkFormContainer = document.getElementById('link-form-container');
+    const authButtons = document.getElementById('auth-buttons');
+    const welcomeMessage = document.getElementById('welcome-message');
+    const openPanelButton = document.getElementById('open-panel');
+    const logoutButton = document.getElementById('logout-button');
+    const galleryContainer = document.getElementById('gallery-container');
 
-// Event Listeners for UI Panels
-document.getElementById('show-login').addEventListener('click', () => loginPanel.classList.add('active'));
-document.getElementById('show-signup').addEventListener('click', () => signupPanel.classList.add('active'));
-document.getElementById('close-login').addEventListener('click', () => loginPanel.classList.remove('active'));
-document.getElementById('close-signup').addEventListener('click', () => signupPanel.classList.remove('active'));
-document.getElementById('close-gallery').addEventListener('click', () => galleryPanel.classList.remove('active'));
-document.getElementById('show-gallery')?.addEventListener('click', () => {
-    galleryPanel.classList.add('active');
-    loadGallery();
-});
+    // Panels
+    const allPanels = document.querySelectorAll('.slide-panel');
 
-// Authentication State Change Handler
-auth.onAuthStateChanged(user => {
-    if (user) {
-        console.log(`Logged in as: ${user.displayName}`);
-        authButtons.style.display = 'none';
-        linkFormContainer.style.display = 'block';
-        welcomeMessage.innerHTML = `Logged in as <span>${user.displayName}</span>`;
-    } else {
-        console.log("No user logged in");
-        authButtons.style.display = 'block';
-        linkFormContainer.style.display = 'none';
-        welcomeMessage.innerHTML = "Click below to log in or sign up.";
+    // Helper Functions
+    function closeAllPanels() {
+        allPanels.forEach(panel => panel.classList.remove('active'));
+        // Only show the top-right button if a user is logged in
+        if (openPanelButton && auth.currentUser) {
+            openPanelButton.style.display = 'block';
+        } else if (openPanelButton) {
+            openPanelButton.style.display = 'none';
+        }
     }
-});
 
-// Login Form Submission
-document.getElementById('login-form').addEventListener('submit', event => {
-    event.preventDefault();
-    const email = document.getElementById('login-email').value;
-    const password = document.getElementById('login-password').value;
+    function openPanel(panel) {
+        closeAllPanels();
+        panel.classList.add('active');
+        if (openPanelButton) {
+            openPanelButton.style.display = 'none'; // Hide top-right button
+        }
+    }
 
-    auth.signInWithEmailAndPassword(email, password)
-        .then(() => console.log("Login successful"))
-        .catch(error => {
-            console.error("Login failed:", error.message);
-            alert(error.message);
+    // Add Event Listeners for Panel Toggles
+    document.querySelectorAll('[data-target]').forEach(button => {
+        button.addEventListener('click', event => {
+            event.stopPropagation();
+            const targetPanel = document.querySelector(event.target.getAttribute('data-target'));
+            if (targetPanel) {
+                openPanel(targetPanel);
+            }
         });
-});
+    });
 
-// Signup Form Submission
-document.getElementById('signup-form').addEventListener('submit', event => {
-    event.preventDefault();
-    const name = document.getElementById('signup-name').value;
-    const email = document.getElementById('signup-email').value;
-    const password = document.getElementById('signup-password').value;
+    // Close Panels When Clicking Outside
+    document.addEventListener('click', event => {
+        if (!event.target.closest('.slide-panel') && !event.target.closest('[data-target]')) {
+            closeAllPanels();
+        }
+    });
 
-    auth.createUserWithEmailAndPassword(email, password)
-        .then(userCredential => {
-            return userCredential.user.updateProfile({ displayName: name });
-        })
-        .then(() => console.log("Signup successful"))
-        .catch(error => {
-            console.error("Signup failed:", error.message);
-            alert(error.message);
-        });
-});
+    // Authentication State Change Handler
+    auth.onAuthStateChanged(user => {
+        if (user) {
+            console.log(`Logged in as: ${user.displayName}`);
+            showNotification('Logged in successfully!', 'success');
+            // Hide Login/Signup Panels
+            if (loginPanel) loginPanel.classList.remove('active');
+            if (signupPanel) signupPanel.classList.remove('active');
 
-// Link Form Submission
-document.getElementById('entry-form').addEventListener('submit', event => {
-    event.preventDefault();
-    const sceneSelect = document.getElementById('scene-select').value;
-    const link = document.getElementById('link-input').value;
-    const currentUser = auth.currentUser;
+            // Update UI
+            if (authButtons) authButtons.style.display = 'none';
+            if (linkFormContainer) linkFormContainer.style.display = 'block';
 
-    if (currentUser) {
-        const entry = {
-            link,
-            name: currentUser.displayName,
-            scene: sceneSelect
-        };
-        database.ref(`entries/${Date.now()}`).set(entry)
-            .then(() => {
-                showNotification('Entry saved successfully!', 'success');
-                document.getElementById('link-input').value = '';
-            })
-            .catch(() => showNotification('Error saving entry!', 'error'));
-    } else {
-        showNotification('You must be logged in to submit an entry.', 'error');
-    }
-});
-
-// Logout Handler
-document.getElementById('logout-button').addEventListener('click', () => {
-    auth.signOut()
-        .then(() => console.log("User logged out"))
-        .catch(error => console.error("Logout failed:", error));
-});
-
-function loadGallery() {
-    const currentUser = auth.currentUser;
-
-    if (!currentUser) {
-        showNotification('You must be logged in to view the gallery.', 'error');
-        return;
-    }
-
-    // Use the name property to determine the folder for gallery
-    const folderName = currentUser.displayName; // Ensure displayName matches the folder naming convention
-
-    galleryContainer.innerHTML = '<p>Loading images...</p>';
-    storage.ref(`uploads/${folderName}/`).listAll()
-        .then(result => {
-            galleryContainer.innerHTML = ''; // Clear loading message
-            if (result.items.length === 0) {
-                galleryContainer.innerHTML = '<p>No images found in your gallery.</p>';
-                return;
+            if (welcomeMessage) {
+                welcomeMessage.innerHTML = `Logged in as <span>${user.displayName}</span>`;
+            }
+            if (openPanelButton) {
+                openPanelButton.style.display = 'block'; // Ensure top-right button is visible
             }
 
-            result.items.forEach(item => {
-                item.getDownloadURL()
-                    .then(url => {
-                        const img = document.createElement('img');
-                        img.src = url;
-                        img.alt = item.name;
-                        galleryContainer.appendChild(img);
+            // Load user-specific images into gallery
+            if (galleryContainer) {
+                const storageRef = storage.ref();
+                const userFolderRef = storageRef.child(`uploads/${user.displayName}`);
+
+                // Clear previous images
+                galleryContainer.innerHTML = '';
+
+                // List all images in the folder
+                userFolderRef.listAll()
+                    .then(result => {
+                        result.items.forEach(imageRef => {
+                            imageRef.getDownloadURL().then(url => {
+                                const img = document.createElement('img');
+                                img.src = url;
+                                img.alt = `Image from ${user.displayName}'s library`;
+                                galleryContainer.appendChild(img);
+                            }).catch(err => {
+                                console.error('Error fetching image URL:', err);
+                            });
+                        });
                     })
-                    .catch(err => console.error('Error fetching image URL:', err));
-            });
-        })
-        .catch(err => {
-            galleryContainer.innerHTML = '<p>Error loading gallery.</p>';
-            console.error('Error listing files:', err);
+                    .catch(err => {
+                        console.error('Error listing files in folder:', err);
+                    });
+            }
+        } else {
+            console.log("No user logged in");
+            if (authButtons) authButtons.style.display = 'block';
+            if (linkFormContainer) linkFormContainer.style.display = 'none';
+
+            if (welcomeMessage) {
+                welcomeMessage.innerHTML = "Click below to log in or sign up.";
+            }
+            if (openPanelButton) {
+                openPanelButton.style.display = 'none'; // Hide top-right button if not logged in
+            }
+
+            // Clear gallery if no user is logged in
+            if (galleryContainer) {
+                galleryContainer.innerHTML = '<p>Please log in to view your library.</p>';
+            }
+        }
+    });
+
+    // Login Form Submission
+    if (document.getElementById('login-form')) {
+        document.getElementById('login-form').addEventListener('submit', event => {
+            event.preventDefault();
+            const email = document.getElementById('login-email').value;
+            const password = document.getElementById('login-password').value;
+
+            auth.signInWithEmailAndPassword(email, password)
+                .then(() => {
+                    console.log("Login successful");
+                })
+                .catch(error => {
+                    console.error("Login failed:", error.message);
+                    showNotification('Wrong email or password!', 'error');
+                });
         });
-}
+    }
 
+    // Signup Form Submission
+    if (document.getElementById('signup-form')) {
+        document.getElementById('signup-form').addEventListener('submit', event => {
+            event.preventDefault();
+            const name = document.getElementById('signup-name').value;
+            const email = document.getElementById('signup-email').value;
+            const password = document.getElementById('signup-password').value;
 
-// Notification Display Function
-function showNotification(message, type) {
-    const notification = document.createElement('div');
-    notification.className = `notification ${type}`;
-    notification.textContent = message;
-    document.body.appendChild(notification);
+            auth.createUserWithEmailAndPassword(email, password)
+                .then(userCredential => {
+                    return userCredential.user.updateProfile({ displayName: name });
+                })
+                .then(() => console.log("Signup successful"))
+                .catch(error => {
+                    console.error("Signup failed:", error.message);
+                    alert(error.message);
+                });
+        });
+    }
 
-    setTimeout(() => {
-        notification.remove();
-    }, 3000);
-}
+    // Link Form Submission
+    if (document.getElementById('entry-form')) {
+        document.getElementById('entry-form').addEventListener('submit', event => {
+            event.preventDefault();
+            const sceneSelect = document.getElementById('scene-select').value;
+            const link = document.getElementById('link-input').value;
+            const currentUser = auth.currentUser;
+
+            if (currentUser) {
+                const entry = {
+                    link,
+                    name: currentUser.displayName,
+                    scene: sceneSelect
+                };
+                database.ref(`entries/${Date.now()}`).set(entry)
+                    .then(() => {
+                        showNotification('Entry saved successfully!', 'success');
+                        document.getElementById('link-input').value = '';
+                    })
+                    .catch(() => showNotification('Error saving entry!', 'error'));
+            } else {
+                showNotification('You must be logged in to submit an entry.', 'error');
+            }
+        });
+    }
+
+    // Logout Button
+    if (logoutButton) {
+        logoutButton.addEventListener('click', () => {
+            auth.signOut()
+                .then(() => {
+                    console.log('User logged out successfully.');
+                    showNotification('Logged out successfully!', 'success');
+                    closeAllPanels(); // Close the slide-out panel
+                })
+                .catch(error => {
+                    console.error('Logout failed:', error.message);
+                    showNotification('Error logging out. Try again!', 'error');
+                });
+        });
+    }
+
+    // Notification Display Function
+    function showNotification(message, type) {
+        const notification = document.createElement('div');
+        notification.className = `notification ${type}`;
+        notification.textContent = message;
+        document.body.appendChild(notification);
+
+        setTimeout(() => {
+            notification.remove();
+        }, 3000);
+    }
+});
