@@ -110,3 +110,18 @@ body {
         grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
     }
 }
+
+
+#scroll-footer {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    background-color: rgba(28, 30, 38, 0.95); /* Background style */
+    color: #fff;
+    text-align: center;
+    padding: 10px 0;
+    transform: translateY(100%); /* Initially hide the footer */
+    transition: transform 0.3s ease-in-out; /* Smooth transition effect */
+    z-index: 999; /* Ensure it's on top */
+}

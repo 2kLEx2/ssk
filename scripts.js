@@ -224,4 +224,19 @@ document.addEventListener('DOMContentLoaded', () => {
             notification.remove();
         }, 3000);
     }
+
+    // Footer Scroll Functionality
+    document.addEventListener('scroll', () => {
+        const scrollFooter = document.getElementById('scroll-footer');
+        const scrollPosition = window.scrollY || document.documentElement.scrollTop;
+        const windowHeight = window.innerHeight || document.documentElement.clientHeight;
+        const documentHeight = document.body.scrollHeight;
+
+        // Check if user has scrolled near the bottom of the page
+        if (scrollPosition + windowHeight >= documentHeight - 50) {
+            scrollFooter.style.transform = 'translateY(0)'; // Show footer
+        } else {
+            scrollFooter.style.transform = 'translateY(100%)'; // Hide footer
+        }
+    });
 });

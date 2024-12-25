@@ -23,6 +23,7 @@
 
 body {
     height: 100vh;
+    min-height: 150vh;
     display: flex;
     justify-content: center;
     align-items: center;
@@ -33,6 +34,8 @@ body {
 
 /* Main Container */
 .main-container {
+    position: fixed;
+    top: 250px;
     width: 400px;
     padding: 40px;
     background: rgba(28, 30, 38, 0.95);
@@ -98,7 +101,7 @@ button:hover {
     text-align: center; /* Match alignment with other panels */
     display: flex;
     flex-direction: column;
-    justify-content: center;
+    justify-content: top;
 }
 
 /* Buttons inside panels */
@@ -290,4 +293,18 @@ input::placeholder {
 #logout-button:hover {
     background: linear-gradient(135deg, #6A1E88, #8823AA);
     transform: scale(1.05);
+}
+
+#scroll-footer {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    background-color: rgba(28, 30, 38, 0.95); /* Background style */
+    color: #fff;
+    text-align: center;
+    padding: 10px 0;
+    transform: translateY(100%); /* Initially hide the footer */
+    transition: transform 0.3s ease-in-out; /* Smooth transition effect */
+    z-index: 999; /* Ensure it's on top */
 }
