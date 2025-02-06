@@ -43,11 +43,11 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function openPanel(panel) {
+        closeAllPanels();
         panel.classList.add('active');
         if (openPanelButton) {
-            openPanelButton.style.display = 'none';
+            openPanelButton.style.display = 'none'; // Hide top-right button
         }
-        setTimeout(() => closeAllPanels(), 50);
     }
 
     // Add Event Listeners for Panel Toggles
